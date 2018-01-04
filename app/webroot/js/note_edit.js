@@ -144,7 +144,8 @@ $(function(){
         src = ' src="' + src + '"';
       }
       htm += '<div style="width:' + width + 'px;height:' + height + 'px;position:absolute;left:'+ pos_x +'px;top:'+ pos_y +'px;overflow:hidden;">';
-      htm += '<img id="' + id + '" width="'+ tile_w + '"height="'+ tile_h +'"' + img_style + src +' >\n';
+      htm += '<img id="' + id + '"' + img_style + src +' >\n';
+      
       htm += '</div>';
     } else {
       if (src.length){
