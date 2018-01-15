@@ -3,7 +3,8 @@
 
 #include<stdint.h>
 #include<stdio.h>
+#include"app.h"
 
-int32_t read_command(uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max_n_arg);
+int32_t read_command(App * app, uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max_n_arg);
 
 #endif

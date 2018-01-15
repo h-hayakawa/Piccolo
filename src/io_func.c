@@ -18,7 +18,7 @@
  *  @param [in] max_n_arg argのサイズ（読み込むトークンの最大数）
  *  @return 読み込まれたトークン数を返す．シンタックスエラー時は0を返し，EOF時はEOFを返す．
  */
-int32_t read_command(uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max_n_arg)
+int32_t read_command(App *app, uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max_n_arg)
 {
   int32_t i;
   int32_t quote_flag = 0;
@@ -27,6 +27,11 @@ int32_t read_command(uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max
   int32_t continue_flag = 1;
   int32_t token_count = 0;
   int32_t len;
+  FILE *in = stdin;
+  
+  if (app->P_I){
+    in = app->P_I;
+  }
 
   i = 0;
   while (continue_flag){
@@ -35,11 +40,11 @@ int32_t read_command(uint8_t *buf, int32_t buf_size, uint8_t *arg[], int32_t max
       printf("長すぎる入力の末尾が無視されました．\n");
       return token_count;
     }
-    if (fgets(buf + i, (buf_size - i), stdin) == NULL){/* 単体のEOF */
+    if (fgets(buf + i, (buf_size - i), in) == NULL){/* 単体のEOF */
       printf("EOFが入力されました．\n");
       return EOF;
     }
-    if (feof(stdin)){
+    if (feof(in)){
       printf("EOFが入力されました．\n");
       return EOF;
     }

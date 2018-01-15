@@ -15,7 +15,41 @@ class MusicController extends AppController {
     }
     
     public function note_edit($id){
+        $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/';
         
+        if (count(glob($outputDir."*.png")) == 0){
+            $pipeDir = PIPE_ROOT_DIR.$id;
+            $input_fpath = ROOT.DS.APP_DIR.'/tmp/origFiles/image/'.$id.'/'.$id.'.bmp';
+            $output_fpath_prefix = $outputDir.$id;
+            if (!file_exists($pipeDir)){
+                mkdir($pipeDir, 0777, true);
+            }
+            
+            if (file_exists($pipeDir.'/input')){
+                unlink($pipeDir.'/input');
+            }
+            if (file_exists($pipeDir.'/output')){
+                unlink($pipeDir.'/output');
+            }
+            $inPipe = $pipeDir.'/input';
+            $outPipe = $pipeDir.'/output';
+            
+            posix_mkfifo($inPipe, '0500');
+            posix_mkfifo($outPipe, '0500');
+            $exe = ROOT.DS.'bin/core_app '. "$inPipe" . ' ' . "$outPipe"." > /dev/null &";
+            $pi = fopen($inPipe, 'w+');
+            $po = fopen($outPipe, 'r+');
+            exec($exe);
+            
+            fwrite($pi, "load_bmp ".$input_fpath."\n");
+            fwrite($pi, "output_tile_all ".$output_fpath_prefix."\n");
+            
+            fwrite($pi, "exit\n");
+            fclose($pi);
+            
+            $s = fgets($po);
+            //pr($s);
+        }
         $this->set('imageName', $id);
         $this->layout = '';
     }
@@ -60,10 +94,10 @@ class MusicController extends AppController {
             1 => array("pipe", "w"),  
             2 => array("file", ROOT.DS.APP_DIR."/tmp/error-output.txt ", "a") 
         ); 
-        $input_fpath_prefix = '../'.APP_DIR.'/tmp/origFiles/image/';
-        $output_fpath_prefix = '../'.APP_DIR.'/tmp/files/image/';            
+        $input_fpath_prefix = ROOT.DS.APP_DIR.'/tmp/origFiles/image/';
+        $output_fpath_prefix = ROOT.DS.APP_DIR.'/tmp/files/image/';            
         $rootName = explode('.', $fname);
-        $reFilename =  $rootName[0].'.bmp';
+        $reFilename =  $id.'.bmp';
         $tileFileName = $id;
         $exe = 'convert '. "$fname" . ' -type truecolor ' . "$reFilename";
 
@@ -75,6 +109,7 @@ class MusicController extends AppController {
         }
         
         if ($flg == 0) {
+          /*
             $flg = 1;
             $input_fpath = $input_fpath_prefix.$id.DS.$reFilename;
             $output_fpath = $output_fpath_prefix.$id.DS.$tileFileName;    
@@ -87,7 +122,7 @@ class MusicController extends AppController {
                 fclose($pipes[1]);;
                 $flg = proc_close($process);
             }
-            
+          */
             if ($flg == 0) {
                 $this->Flash->success(__('The Image has been saved and combined'));
                 $this->redirect(array('action' => 'index'));
