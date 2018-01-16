@@ -43,8 +43,7 @@
       </div><!--/.content-area-->
       <div id="pre_load_area" style="display:none;">
       </div>
-      <div id="file_name_data" style="display:none;" value="<?php echo $imageName ?>">
-      </div>
+      <input type="text" id="file_name_data" style="display:none;" value="<?php echo $imageName ?>">
     </div>
   </div><!--/.main-content-->
     

@@ -15,11 +15,11 @@ class MusicController extends AppController {
     }
     
     public function note_edit($id){
-        $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/';
+        $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/';
         
         if (count(glob($outputDir."*.png")) == 0){
             $pipeDir = PIPE_ROOT_DIR.$id;
-            $input_fpath = ROOT.DS.APP_DIR.'/tmp/origFiles/image/'.$id.'/'.$id.'.bmp';
+            $input_fpath = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/raw/'.$id.'.bmp';
             $output_fpath_prefix = $outputDir.$id;
             if (!file_exists($pipeDir)){
                 mkdir($pipeDir, 0777, true);
@@ -88,48 +88,25 @@ class MusicController extends AppController {
     
     public function imageConversion($id = 0, $fname = '')
     {
-        $flg = 1;
-        $spec = array( 
-            0 => array("pipe", "r"), 
-            1 => array("pipe", "w"),  
-            2 => array("file", ROOT.DS.APP_DIR."/tmp/error-output.txt ", "a") 
-        ); 
-        $input_fpath_prefix = ROOT.DS.APP_DIR.'/tmp/origFiles/image/';
-        $output_fpath_prefix = ROOT.DS.APP_DIR.'/tmp/files/image/';            
-        $rootName = explode('.', $fname);
         $reFilename =  $id.'.bmp';
-        $tileFileName = $id;
-        $exe = 'convert '. "$fname" . ' -type truecolor ' . "$reFilename";
-
-        $process = proc_open($exe, $spec, $pipes, ROOT.DS.APP_DIR.'/tmp/origFiles/image/'.$id, null);
-        if (is_resource($process)) {
-            fclose($pipes[0]);
-            fclose($pipes[1]);;
-            $flg = proc_close($process);
+        $input_fpath = ROOT.DS.APP_DIR.'/tmp/origFiles/image/'.$id.'/'.$fname;
+        $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/raw/';
+        $output_fpath = $outputDir.$reFilename;
+        
+        if (!file_exists($outputDir)){
+            mkdir($outputDir, 0777, true);
         }
         
+        $exe = 'convert '. "$input_fpath" . ' -type truecolor ' . "$output_fpath";
+
+        $flg = exec($exe);
+        
         if ($flg == 0) {
-          /*
-            $flg = 1;
-            $input_fpath = $input_fpath_prefix.$id.DS.$reFilename;
-            $output_fpath = $output_fpath_prefix.$id.DS.$tileFileName;    
-            $exe = ROOT.DS.'bin/bmp2tile '. "$input_fpath" . ' ' . "$output_fpath";
-            
-            
-            $process = proc_open($exe, $spec, $pipes, ROOT.DS.'src', null);
-            if (is_resource($process)) {
-                fclose($pipes[0]);
-                fclose($pipes[1]);;
-                $flg = proc_close($process);
-            }
-          */
-            if ($flg == 0) {
-                $this->Flash->success(__('The Image has been saved and combined'));
-                $this->redirect(array('action' => 'index'));
-            } else {
-                $this->Flash->error(__('Unable to combine the Image.'));
-                $this->redirect(array('action' => 'index'));
-            }
+            $this->Flash->success(__('The Image has been saved and combined'));
+            $this->redirect(array('action' => 'index'));
+        } else {
+            $this->Flash->error(__('Unable to combine the Image.'));
+            $this->redirect(array('action' => 'index'));
         }
     }
 }

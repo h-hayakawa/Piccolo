@@ -38,19 +38,11 @@ $(function(){
     var pre_load_size = 2;
     var generated_meta_info = [];
     
-    var url = location.href; 
-    var parameters = url.split('/');
-    var dir_id = parameters[parameters.length - 1];
-    var imgName = $('#file_name_data').attr('value');
-    if (imgName != null && imgName != undefined) var imgArray = imgName.split('.');
+    var imgName = $('#file_name_data').val();
     var id_prefix = 'tile';
     var preload_id_prefix = 'preload_tile';
-    if (dir_id.match(/^\d+$/)) {
-        var file_prefix = '/read/image/' + dir_id + '/' + imgArray[0];
-    } else {
-        var file_prefix = '/read/test.bmp';
-    }
-    
+    var file_prefix = '/read/image/' + imgName + '/0' + '/' + imgName;
+
     var lft_x = t_ost_x - 1;
     var lft_y = t_ost_y - 1;
     var rght_x = tile_x + t_ost_x;
