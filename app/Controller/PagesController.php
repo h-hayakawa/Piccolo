@@ -81,9 +81,52 @@ class PagesController extends AppController {
       $filepath = Router::url();
       $len = strlen($filepath);
       $filepath = substr($filepath, 6, $len);
+      
+      $fileInfo = explode('/', $filepath);
+      $fileName = $fileInfo[count($fileInfo) - 1];
+      $tileInfo = explode('_', $fileName);
+      $tileInfo[count($tileInfo) - 1] = explode('.', $tileInfo[count($tileInfo) - 1])[0];
+      
+      $gen = $fileInfo[count($fileInfo) - 2];
+      $id = $fileInfo[count($fileInfo) - 3];
+      
+      $orgBmp = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/'.$gen.'/raw/'.$id.'.bmp';
       $this->layout = false;
       $this->render(false);
       $imgFile = COMMON_FILE_PATH . $filepath;
+      if (!file_exists($imgFile)){
+          $pi = null;
+          $pipeDir = PIPE_ROOT_DIR.$id;
+          if (!file_exists($pipeDir)){
+              mkdir($pipeDir, 0777, true);
+          }
+          $inPipe = $pipeDir.'/input';
+          if (!file_exists($pipeDir.'/input')){
+              posix_mkfifo($inPipe, '0500');
+              $exe = ROOT.DS.'bin/core_app '. "$inPipe" . ' ' ." > /dev/null &";
+              $pi = fopen($inPipe, 'w+');
+              exec($exe);
+              fwrite($pi, "load_bmp ".$orgBmp."\n");
+          } else {
+              $pi = fopen($inPipe, 'w+');
+          }
+          $tilePipeDir = PIPE_ROOT_DIR.$id.'/'.$gen;
+          if (!file_exists($tilePipeDir)){
+              mkdir($tilePipeDir, 0777, true);
+          }
+          $tilePipe = PIPE_ROOT_DIR.$id.'/'.$gen.'/'.$id.'_'.$tileInfo[1].'_'.$tileInfo[2].'_'.$tileInfo[3];
+          if (file_exists($tilePipe)){
+              unlink($tilePipe);
+          }
+          posix_mkfifo($tilePipe, '0500');
+          $rspPipe = fopen($tilePipe, 'w+');
+          $cmd = "output_tile ".ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/'.$gen.'/'.$tileInfo[0]." ".$tileInfo[1]." ".$tileInfo[2]." ".$tileInfo[3]." ". $tilePipe ."\n";
+          fwrite($pi, $cmd);
+          fclose($pi);
+          $r = fgets($rspPipe);
+          fclose($rspPipe);
+          unlink($tilePipe);
+      }
       $finfo = new finfo(FILEINFO_MIME_TYPE);
       $mimeType = $finfo->file($imgFile);
       header('Content-type: ' . $mimeType . '; charset=UTF-8');

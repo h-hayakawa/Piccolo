@@ -4,6 +4,7 @@
 #include<time.h>
 #include<unistd.h>
 #include<signal.h>
+#include<sys/stat.h>
 #include"config.h"
 #include"bitmapio.h"
 #include"png.h"
@@ -11,7 +12,7 @@
 #include"png_out.h"
 #include"app.h"
 
-#define LOG_DIR "/var/www/Flute/bin/log"
+
 
 void log_write(uint8_t *str){
   FILE *log;
@@ -35,6 +36,14 @@ int32_t exec_command(App* app, int32_t argc, uint8_t *argv[], struct command_nam
   /* コマンドが多いわけではないのでコマンド探索ツリーとかは作らない予定 */
   for (i = 0 ; i < n_func ; i++){
     if (strcmp(argv[0], command_array[i].name) == 0){
+      uint8_t logbuf[4096];
+      uint32_t ii;
+      for (ii = 0 ; ii < argc ; ii++){
+        sprintf(logbuf, "%s ", argv[ii]);
+        log_write(logbuf);
+      }
+      sprintf(logbuf, "\n", argv[ii]);
+      log_write(logbuf);
       return command_array[i].func(app, argc, argv);
     }
   }
@@ -48,6 +57,7 @@ int32_t app_load_bmp(App *app, int32_t argc, uint8_t *argv[])
   int32_t i;
   if (argc < 2){
     printf("%sに必要な引数が足りません．\n",argv[0]);
+    return 0;
   }
   if (argc > 2){
     printf("%sに指定された余分な引数が無視されました．\n",argv[0]);
@@ -61,7 +71,7 @@ int32_t app_load_bmp(App *app, int32_t argc, uint8_t *argv[])
   }
   return 0;
 }
-
+/*
 static
 int32_t app_output_tile_all(App *app, int32_t argc, uint8_t *argv[]){
   if (argc < 2){
@@ -75,6 +85,48 @@ int32_t app_output_tile_all(App *app, int32_t argc, uint8_t *argv[]){
   if (app->P_O){
     fprintf(app->P_O, "done\n");
     fflush(app->P_O);
+  }
+  return 0;
+}
+*/
+static
+int32_t app_output_tile(App *app, int32_t argc, uint8_t *argv[]){
+  if (argc < 5){
+    printf("%sに必要な引数が足りません．\n",argv[0]);
+    return 0;
+  }
+  if (app->bmp.map == NULL){
+    printf("%s:画像ファイルがロードされていません\n",argv[0]);
+    return 0;
+  }
+  int32_t y = atoi(argv[2]);
+  int32_t x = atoi(argv[3]);
+  int32_t m = atoi(argv[4]);
+  FILE *fp = NULL;
+  
+  if (argc > 5){
+    uint8_t logbuf[64];
+    sprintf(logbuf, "%s\n", argv[5]);
+    log_write(logbuf);
+    struct stat st;
+    if (stat(argv[5], &st) != 0) {
+      uint8_t logbuf[64];
+      sprintf(logbuf, "fifo %s のオープンに失敗しましたstat\n", argv[5]);
+      log_write(logbuf);
+      return 0;
+    }
+    fp = fopen(argv[5], "w+");
+    if (fp == NULL){
+      uint8_t logbuf[64];
+      sprintf(logbuf, "fifo %s のオープンに失敗しました\n", argv[5]);
+      log_write(logbuf);
+      return 0;
+    }
+  }
+  tile(&app->bmp, argv[1], y, x, m);
+  if (fp){
+    fprintf(fp, "done\n");
+    fclose(fp);
   }
   return 0;
 }
@@ -133,7 +185,7 @@ void *signalx(int signo, void* func)
   act.sa_flags = 0;
 
   if (sigaction(signo, &act, &oldact) < 0) return(SIG_ERR);
-	
+  
   return(oldact.sa_handler);
 }
 
@@ -144,6 +196,7 @@ int main(int argc, char *argv[]){
   int32_t n_arg;
   int32_t i;
   uint8_t logbuf[4096];
+  int32_t timeout_sec = TIMEOUT_SEC;
   
   /* set callback function at alarm signal */
   void* oldSigFunc = signalx(SIGALRM, sigFunc);
@@ -151,7 +204,8 @@ int main(int argc, char *argv[]){
   struct command_name_to_func command_array_main[] = {
     {"load_bmp", app_load_bmp},
     {"output_png", app_output_png},
-    {"output_tile_all", app_output_tile_all},
+    //{"output_tile_all", app_output_tile_all},
+    {"output_tile", app_output_tile},
     {"exit", app_exit},
   };
   int32_t n_curr_command = sizeof(command_array_main)/sizeof(command_array_main[0]);
@@ -174,8 +228,10 @@ int main(int argc, char *argv[]){
       return 0;
     }
   }
+  if (argc == 1){
+    timeout_sec = 0;
+  }
 
-  
   sprintf(logbuf, "in%s out%s\n", argv[1], argv[2]);
   log_write(logbuf);
   
@@ -184,7 +240,7 @@ int main(int argc, char *argv[]){
   
   while(app.app_mode == APP_RUNNING){
     /* set timeout value */
-    alarm(TIMEOUT_SEC);
+    alarm(timeout_sec);
     n_arg = read_command(&app, command_buf, COMMAND_BUF_SIZE, arg, MAX_N_ARG);
     alarm(0);
     if (n_arg > 0){
@@ -210,4 +266,12 @@ int main(int argc, char *argv[]){
   app_exit(&app, 0, NULL);
   /* reset timeout value */
   alarm(0);
+  
+  if (argc > 1){
+    remove(argv[1]);
+  }
+  if (argc > 2){
+    remove(argv[2]);
+  }
+  return 0;
 }

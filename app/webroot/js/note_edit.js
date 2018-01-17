@@ -3,7 +3,7 @@ $(function(){
   var w_height = $('#draw_window').height();
   var cam_x = 0;
   var cam_y = 0;
-  var mag = 1.0; /* 表示倍率 */
+  var mag = 3; /* 表示倍率 */
   var tile_w = 256;
   var tile_h = 256;
   
@@ -11,8 +11,6 @@ $(function(){
   var my = 0;
   var drag = false;
   var fileNameData;
-  //console.log('width:'+w_width);
-  //console.log('height:'+w_height);
   
   function load_img(url, id){
     //imgPreloaderオブジェクトを作る、名前は任意
@@ -152,7 +150,7 @@ $(function(){
        return;
     }
     var id = id_prefix + '_' + tile_y + '_' + tile_x;
-    var url = fpath_prefix + '_y' + tile_y + '_x' + tile_x + '.png';
+    var url = fpath_prefix + '_' + tile_y + '_' + tile_x + '_' + mag + '.png';
     if (($('#' + id).attr('src')) != undefined && ($('#' + id).attr('src')).length){
       return;
     }

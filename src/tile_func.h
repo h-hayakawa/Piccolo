@@ -6,7 +6,7 @@
 #include"app.h"
 #include"bitmapio.h"
 
-int32_t tile(char *filename, Bmp *bmp);
+int32_t tile(Bmp *bmp, char *filename, int32_t y, int32_t x, int32_t m);
 
 
 #endif

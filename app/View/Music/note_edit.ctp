@@ -46,9 +46,6 @@
       <input type="text" id="file_name_data" style="display:none;" value="<?php echo $imageName ?>">
     </div>
   </div><!--/.main-content-->
-    
-  
-
 
   </body>
   <script type="text/javascript" src="/js/jquery.1.12.4.min.js"></script>

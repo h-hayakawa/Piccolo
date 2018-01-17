@@ -16,7 +16,6 @@ class MusicController extends AppController {
     
     public function note_edit($id){
         $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/';
-        
         if (count(glob($outputDir."*.png")) == 0){
             $pipeDir = PIPE_ROOT_DIR.$id;
             $input_fpath = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/raw/'.$id.'.bmp';
@@ -24,7 +23,6 @@ class MusicController extends AppController {
             if (!file_exists($pipeDir)){
                 mkdir($pipeDir, 0777, true);
             }
-            
             if (file_exists($pipeDir.'/input')){
                 unlink($pipeDir.'/input');
             }
@@ -32,23 +30,13 @@ class MusicController extends AppController {
                 unlink($pipeDir.'/output');
             }
             $inPipe = $pipeDir.'/input';
-            $outPipe = $pipeDir.'/output';
             
             posix_mkfifo($inPipe, '0500');
-            posix_mkfifo($outPipe, '0500');
-            $exe = ROOT.DS.'bin/core_app '. "$inPipe" . ' ' . "$outPipe"." > /dev/null &";
+            $exe = ROOT.DS.'bin/core_app '. "$inPipe" . ' ' ." > /dev/null &";
             $pi = fopen($inPipe, 'w+');
-            $po = fopen($outPipe, 'r+');
             exec($exe);
-            
             fwrite($pi, "load_bmp ".$input_fpath."\n");
-            fwrite($pi, "output_tile_all ".$output_fpath_prefix."\n");
-            
-            fwrite($pi, "exit\n");
             fclose($pi);
-            
-            $s = fgets($po);
-            //pr($s);
         }
         $this->set('imageName', $id);
         $this->layout = '';

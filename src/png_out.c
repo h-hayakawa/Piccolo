@@ -80,7 +80,6 @@ int SaveBitmapAsPngFile(char* filename, Bmp *bmp)
     png_write_image(png, lines);
     png_write_end(png, info);
     png_destroy_write_struct(&png, &info);
-
     free(lines);
     fclose(outf);
     return 1;

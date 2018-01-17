@@ -14,9 +14,9 @@ BMP_IO_ERROR_FAILD_TO_ALLOCATE_MEMORY
 
 
 typedef struct __Bmp__{
-  uint32_t width;             /* x方向のピクセル数 */
-  uint32_t height;             /* y方向のピクセル数 */
-  uint32_t bit_count; /* 1ピクセルビット数 */
+  int32_t width;             /* x方向のピクセル数 */
+  int32_t height;             /* y方向のピクセル数 */
+  int32_t bit_count; /* 1ピクセルビット数 */
   uint8_t *map;  /* データ */
 } Bmp;
 
