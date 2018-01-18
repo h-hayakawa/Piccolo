@@ -34,7 +34,29 @@
   <div class="main-content" style="margin-left:20px;height:calc( 100% - 52px );width:calc( 100% - 35px );">
     <div class="row" style="height:100%;">
       <div class="col-md-3 sidebar">
-        side
+        <select id="mag_selector">
+          <option value="0">8倍</option>
+          <option value="1">4倍</option>
+          <option value="2">2倍</option>
+          <option value="3" selected="selected">1倍</option>
+          <option value="4">1/2倍</option>
+          <option value="5">1/4倍</option>
+          <option value="6">1/8倍</option>
+          <option value="7">1/12倍</option>
+          <option value="8">1/16倍</option>
+          <option value="9">1/20倍</option>
+          <option value="10">1/24倍</option>
+          <option value="11">1/28倍</option>
+          <option value="12">1/32倍</option>
+          <option value="13">1/36倍</option>
+          <option value="14">1/40倍</option>
+          <option value="15">1/44倍</option>
+          <option value="16">1/48倍</option>
+          <option value="17">1/52倍</option>
+          <option value="18">1/56倍</option>
+          <option value="19">1/60倍</option>
+          <option value="20">1/64倍</option>
+        </select>
       </div><!--/.sidebar-->
       <div id="draw_window" class="col-md-9 content-area" style="border:solid 1px;height:100%; padding:0;">
         <!--

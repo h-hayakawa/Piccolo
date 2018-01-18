@@ -5,7 +5,7 @@
 #define TILE_H 256
 
 /* 操作をしなかった場合のタイムアウト設定（秒） */
-#define TIMEOUT_SEC 10
+#define TIMEOUT_SEC 60
 
 
 #define LOG_DIR "/var/www/Flute/bin/log"

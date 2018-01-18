@@ -3,7 +3,7 @@ $(function(){
   var w_height = $('#draw_window').height();
   var cam_x = 0;
   var cam_y = 0;
-  var mag = 9; /* 表示倍率 */
+  var mag = $('#mag_selector').val(); /* 表示倍率 */
   var tile_w = 256;
   var tile_h = 256;
   
@@ -11,6 +11,13 @@ $(function(){
   var my = 0;
   var drag = false;
   var fileNameData;
+  
+  $('#mag_selector').change(function(){
+    mag = $('#mag_selector').val();
+    $('#draw_window').html('');
+    $('#pre_load_area').html('');
+    draw();
+  });
   
   function load_img(url, id){
     //imgPreloaderオブジェクトを作る、名前は任意
