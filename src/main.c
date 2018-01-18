@@ -91,23 +91,8 @@ int32_t app_output_tile_all(App *app, int32_t argc, uint8_t *argv[]){
 */
 static
 int32_t app_output_tile(App *app, int32_t argc, uint8_t *argv[]){
-  if (argc < 5){
-    printf("%sに必要な引数が足りません．\n",argv[0]);
-    return 0;
-  }
-  if (app->bmp.map == NULL){
-    printf("%s:画像ファイルがロードされていません\n",argv[0]);
-    return 0;
-  }
-  int32_t y = atoi(argv[2]);
-  int32_t x = atoi(argv[3]);
-  int32_t m = atoi(argv[4]);
   FILE *fp = NULL;
-  
   if (argc > 5){
-    uint8_t logbuf[64];
-    sprintf(logbuf, "%s\n", argv[5]);
-    log_write(logbuf);
     struct stat st;
     if (stat(argv[5], &st) != 0) {
       uint8_t logbuf[64];
@@ -123,6 +108,26 @@ int32_t app_output_tile(App *app, int32_t argc, uint8_t *argv[]){
       return 0;
     }
   }
+  if (argc < 5){
+    printf("%sに必要な引数が足りません．\n",argv[0]);
+    if (fp){
+      fprintf(fp, "err\n");
+      fclose(fp);
+    }
+    return 0;
+  }
+  if (app->bmp.map == NULL){
+    printf("%s:画像ファイルがロードされていません\n",argv[0]);
+    if (fp){
+      fprintf(fp, "retry\n");
+      fclose(fp);
+    }
+    return 0;
+  }
+  int32_t y = atoi(argv[2]);
+  int32_t x = atoi(argv[3]);
+  int32_t m = atoi(argv[4]);
+
   tile(&app->bmp, argv[1], y, x, m);
   if (fp){
     fprintf(fp, "done\n");

@@ -16,26 +16,26 @@ class MusicController extends AppController {
     
     public function note_edit($id){
         $outputDir = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/';
-        if (count(glob($outputDir."*.png")) == 0){
-            $pipeDir = PIPE_ROOT_DIR.$id;
-            $input_fpath = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/raw/'.$id.'.bmp';
-            $output_fpath_prefix = $outputDir.$id;
-            if (!file_exists($pipeDir)){
-                mkdir($pipeDir, 0777, true);
-            }
-            if (file_exists($pipeDir.'/input')){
-                unlink($pipeDir.'/input');
-            }
-            if (file_exists($pipeDir.'/output')){
-                unlink($pipeDir.'/output');
-            }
-            $inPipe = $pipeDir.'/input';
-            
+        
+        $pipeDir = PIPE_ROOT_DIR.$id;
+        $input_fpath = ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/0/raw/'.$id.'.bmp';
+        $output_fpath_prefix = $outputDir.$id;
+        $inPipe = $pipeDir.'/input';
+        if (!file_exists($pipeDir)){
+            mkdir($pipeDir, 0777, true);
+        }
+        if (!file_exists($inPipe)){
             posix_mkfifo($inPipe, '0500');
             $exe = ROOT.DS.'bin/core_app '. "$inPipe" . ' ' ." > /dev/null &";
             $pi = fopen($inPipe, 'w+');
-            exec($exe);
             fwrite($pi, "load_bmp ".$input_fpath."\n");
+            fflush($pi);
+            exec($exe);
+            fclose($pi);
+        } else {
+            $pi = fopen($inPipe, 'w+');
+            fwrite($pi, "load_bmp ".$input_fpath."\n");
+            fflush($pi);
             fclose($pi);
         }
         $this->set('imageName', $id);

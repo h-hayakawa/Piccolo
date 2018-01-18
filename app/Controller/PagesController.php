@@ -107,6 +107,7 @@ class PagesController extends AppController {
               $pi = fopen($inPipe, 'w+');
               exec($exe);
               fwrite($pi, "load_bmp ".$orgBmp."\n");
+              fflush($pi);
           } else {
               $pi = fopen($inPipe, 'w+');
           }
@@ -121,9 +122,24 @@ class PagesController extends AppController {
           posix_mkfifo($tilePipe, '0500');
           $rspPipe = fopen($tilePipe, 'w+');
           $cmd = "output_tile ".ROOT.DS.APP_DIR.'/tmp/files/image/'.$id.'/'.$gen.'/'.$tileInfo[0]." ".$tileInfo[1]." ".$tileInfo[2]." ".$tileInfo[3]." ". $tilePipe ."\n";
-          fwrite($pi, $cmd);
+          
+          while (1){
+            fwrite($pi, $cmd);
+            fflush($pi);
+            $r = fgets($rspPipe);
+            if ($r == "done\n"){
+              break;
+            }
+            if ($r == "err\n"){
+              break;
+            }
+            if ($r == "retry\n"){
+              ;
+            }
+            usleep(300000);
+          }
+          
           fclose($pi);
-          $r = fgets($rspPipe);
           fclose($rspPipe);
           unlink($tilePipe);
       }
