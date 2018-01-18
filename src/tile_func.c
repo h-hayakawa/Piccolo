@@ -11,6 +11,43 @@
 #define WIDTHBYTES(bits)    (((bits)+31)/32*4)
 #endif//WIDTHBYTES
 
+
+void padding_tile(Bmp *tile){
+  if (tile->width == TILE_W && tile->height == TILE_H){
+    return ;
+  }
+  int32_t nDepth = 24; //24bit BGR
+  int32_t tileWidthBytes = WIDTHBYTES(TILE_W * nDepth);
+  int32_t stileWidthBytes = WIDTHBYTES(tile->width * nDepth);
+  uint32_t cbBits = tileWidthBytes * TILE_H;
+  uint8_t *out;
+  int32_t i, j;
+  
+  out = malloc(cbBits);
+  if (!out){
+    return;
+  }
+  for (j = 0 ; j < TILE_H ; j ++){
+    for (i = 0 ; i < TILE_W ; i ++){
+      if (j >= tile->height || i >= tile->width){
+        out[(tileWidthBytes * j) + i * 3 + 0] = 255;
+        out[(tileWidthBytes * j) + i * 3 + 1] = 255;
+        out[(tileWidthBytes * j) + i * 3 + 2] = 255;
+      } else {
+        out[(tileWidthBytes * j) + i * 3 + 0] = tile->map[(stileWidthBytes * j) + i * 3 + 0];
+        out[(tileWidthBytes * j) + i * 3 + 1] = tile->map[(stileWidthBytes * j) + i * 3 + 1];
+        out[(tileWidthBytes * j) + i * 3 + 2] = tile->map[(stileWidthBytes * j) + i * 3 + 2];
+      }
+    }
+  }
+  
+  free(tile->map);
+  tile->width = TILE_W;
+  tile->height = TILE_H;
+  tile->map = out;
+}
+
+
 int32_t tile(Bmp *bmp, char *filename, int32_t y, int32_t x, int32_t m){
   uint8_t fname[1024];
   int32_t nDepth = 24; //24bit BGR
@@ -80,6 +117,7 @@ int32_t tile(Bmp *bmp, char *filename, int32_t y, int32_t x, int32_t m){
         tile_tmp.map[(tileWidthBytes * j) + i * 3 + 2] = bmp->map[(dwWidthBytes * by) + bx * 3 + 2];
       }
     }
+    padding_tile(&tile_tmp);
     SaveBitmapAsPngFile(fname, &tile_tmp);
   }
   
@@ -96,6 +134,7 @@ int32_t tile(Bmp *bmp, char *filename, int32_t y, int32_t x, int32_t m){
       cp *= 3;
       memcpy(tile_tmp.map + (tileWidthBytes * j), bmp->map + (dwWidthBytes * (j + jp) + (ip)*3), cp);
     }
+    padding_tile(&tile_tmp);
     SaveBitmapAsPngFile(fname, &tile_tmp);
   }
   /* 縮小 */
@@ -151,6 +190,7 @@ int32_t tile(Bmp *bmp, char *filename, int32_t y, int32_t x, int32_t m){
         tile_tmp.map[(tileWidthBytes * j) + i * 3 + 2] = r;
       }
     }
+    padding_tile(&tile_tmp);
     SaveBitmapAsPngFile(fname, &tile_tmp);
   }
   free(tile_tmp.map);
